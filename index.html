@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <title>Simple JSON GET request</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+</head>
+
+<body>
+
+    <h1>Doctors List</h1>
+    <h3 id="result"></h3>
+
+    <button onclick="load()">Load JSON</button>
+
+    <div class="list" id="list">
+        <p>Here comes the list</p>
+    </div>
+
+    <script>
+        let doctors = [];
+
+
+        const BASE_SERVER_URL = 'http://tim-kuntze.developerakademie.com/app_doctorsapp/'; // Place of the backend
+
+        /**
+         * Loads myJSON from Server
+         */
+        function load() {
+            updateStatus('Laden ...');
+            loadJSONFromServer()
+                .then(function(result) {
+
+                    doctors = JSON.parse(result);
+
+                    updateStatus('Laden erfolgreich!');
+                    displayDoctorList();
+                })
+                .catch(function(error) {
+                    updateStatus('Fehler beim Laden');
+                    console.error('error', error);
+
+                });
+        }
+
+
+        /**
+         * Loads a JSON or JSON Array to the Server
+         * payload {JSON | Array} - The payload you want to store
+         */
+        function loadJSONFromServer() {
+            return new Promise(function(resolve, reject) {
+                let xhttp = new XMLHttpRequest();
+                let proxy = determineProxySettings();
+                let serverURL = proxy + BASE_SERVER_URL + 'doctors.json';
+                xhttp.open('GET', serverURL);
+
+                xhttp.onreadystatechange = function(oEvent) {
+                    if (xhttp.readyState === 4) {
+                        if (xhttp.status >= 200 && xhttp.status <= 399) {
+                            resolve(xhttp.responseText);
+                        } else {
+                            reject(xhttp.statusText);
+                        }
+                    }
+                };
+
+                xhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+                xhttp.send();
+
+            });
+        }
+
+        function updateStatus(status) {
+            result.innerHTML = status;
+        }
+
+        function determineProxySettings() {
+            if (window.location.href.indexOf('.developerakademie.com') > -1) {
+                return '';
+            } else {
+                return 'https://cors-anywhere.herokuapp.com/';
+            }
+        }
+
+
+        //*Displaying of InTesting Tasks.
+
+        function displayDoctorList() {
+
+            console.log(doctors);
+
+            for (let id = 0; id < doctors.length; id++) {
+
+                let listDoctors = `<div class="doctors-list">
+        <div class="image" id="image"><img src="${doctors[id].img}"></div>
+        <div class="title" id="title">${doctors[id].title}</div>
+        <div class="name" id="name">${doctors[id].first_name + doctors[id].last_name}</div>
+        <div class="specialities" id="specialities">${doctors[id].specialities}</div>
+        <div class="street" id="streets">${doctors[id].streets}</div>
+        <div class="zipcode" id="zipcode">${doctors[id].zipcode}</div>
+        <div class="city" id="zipcode">${doctors[id].city}</div>
+        <div class="opening_hours" id="opening_hours">${doctors[id].opening_hours}</div>
+        </div>`;
+                document.getElementById('list').insertAdjacentHTML('beforeend', listDoctors);
+            }
+
+        }
+    </script>
+
+</body>
+
+</html>
